@@ -1,0 +1,8 @@
+\set ECHO none
+1..5
+ok 1 - Table _test_ed.extension_drop__commands should exist
+ok 2 - Drop extension
+ok 3 - Create extension in schema _test_ed_2
+ok 4 - Table _test_ed_2.extension_drop__commands should exist
+ok 5 - Drop schema _test_ed
+# TRANSACTION INTENTIONALLY LEFT OPEN!
