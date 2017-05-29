@@ -3,7 +3,6 @@ SET client_min_messages = WARNING;
 
 -- Add any test dependency statements here
 -- Note: pgTap is loaded by setup.sql
-CREATE EXTENSION IF NOT EXISTS cat_tools;
 
 -- Re-enable notices
 SET client_min_messages = NOTICE;
@@ -16,4 +15,6 @@ SET search_path = :TEST_SCHEMA, tap, "$user";
  * error if the extension is already loaded (because we want to ensure we're
  * getting the very latest version).
  */
-CREATE EXTENSION extension_drop;
+SET client_min_messages = WARNING; -- Squelch notice from CASCADE
+CREATE EXTENSION extension_drop CASCADE;
+SET client_min_messages = NOTICE;
