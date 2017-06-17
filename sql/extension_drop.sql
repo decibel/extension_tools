@@ -43,7 +43,7 @@ DECLARE
   create_template CONSTANT text := $template$
 CREATE OR REPLACE FUNCTION %s(
 %s
-) RETURNS %s AS
+) RETURNS %s SET search_path FROM CURRENT AS
 %L
 $template$
   ;
@@ -117,13 +117,14 @@ SELECT __extension_drop.safe_dump('extension_drop__commands', '');
 
 SELECT __extension_drop.create_function(
   'extension_drop__sanity_check'
-  , ''
+  , 'ignore name DEFAULT NULL'
   , 'name[] LANGUAGE sql STABLE'
   , $body$
 SELECT array(
   SELECT extension_name
     FROM extension_drop__commands c
     WHERE NOT EXISTS(SELECT 1 FROM pg_catalog.pg_extension e WHERE e.extname = c.extension_name)
+      AND extension_name IS DISTINCT FROM ignore
   )
 $body$
   , $$Returns an array of extensions that have drop commands but do not exist. This array should always be empty!$$
@@ -131,11 +132,11 @@ $body$
 
 SELECT __extension_drop.create_function(
   'extension_drop__sanity_assert'
-  , ''
+  , 'ignore name DEFAULT NULL'
   , 'void LANGUAGE plpgsql STABLE'
   , $body$
 DECLARE
-  bad name[] := extension_drop__sanity_check();
+  bad name[] := extension_drop__sanity_check(ignore);
 BEGIN
   IF bad != '{}'::name[] THEN
     RAISE 'unexpected drop commands'
@@ -143,8 +144,8 @@ BEGIN
         , HINT = $$This should not happen unless someone manually inserted into "extension_drop__commands" or messed with the "extension_drop" event trigger.
   Use SELECT extension_drop__repair() to fix this.$$
         , DETAIL = format(
-          'These extension%s do not exist: %'
-          , CASE WHEN array_length(bad, 1) = 1 THEN '' ELSE 's' END
+          '%s not exist: %s'
+          , CASE WHEN array_length(bad, 1) = 1 THEN 'This extension does' ELSE 'These extensions do' END
           , array_to_string(bad, ', ')
         )
     ;
@@ -184,9 +185,12 @@ BEGIN
   PERFORM extension_drop__sanity_assert();
   SELECT INTO STRICT ret
       *
-    FROM extension_drop d
+    FROM extension_drop__commands d
     WHERE d.extension_name = extension_drop__get.extension_name
   ;
+
+  RETURN ret;
+
 EXCEPTION WHEN no_data_found THEN
   RAISE 'no drop commands for extension "%"', extension_name
     USING errcode = 'no_data_found'
@@ -265,7 +269,6 @@ SELECT __extension_drop.create_function(
 DECLARE
   r extension_drop__commands;
 BEGIN
-  PERFORM extension_drop__sanity_assert();
   FOR r IN
     SELECT c.*
       FROM extension_drop__commands c
@@ -275,7 +278,14 @@ BEGIN
   LOOP
     RAISE DEBUG E'extension "%" is being dropped; executing SQL:\n%', r.extension_name, r.sql;
     EXECUTE r.sql;
+    DELETE FROM extension_drop__commands WHERE extension_name = r.extension_name;
   END LOOP;
+
+  /*
+   * Need to do this after the fact since the extensions being dropped have
+   * already been removed from the catalog by the time this function is called.
+   */
+  PERFORM extension_drop__sanity_assert();
 END
 $body$
   , 'Event trigger function that does the actual work for extension_drop.'

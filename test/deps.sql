@@ -7,6 +7,9 @@ SET client_min_messages = WARNING;
 -- Re-enable notices
 SET client_min_messages = NOTICE;
 
+\set TT extension_drop_test_table
+CREATE TEMP TABLE :TT (i int);
+
 CREATE SCHEMA :TEST_SCHEMA;
 SET search_path = :TEST_SCHEMA, tap, "$user";
 
