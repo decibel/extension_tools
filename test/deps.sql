@@ -24,7 +24,7 @@ DO $$ BEGIN
     CREATE EXTENSION IF NOT EXISTS cat_tools;
     CREATE EXTENSION extension_drop ;
   ELSE
-    CREATE EXTENSION extension_drop CASCADE;
+    EXECUTE $exec$CREATE EXTENSION extension_drop CASCADE$exec$;
   END IF;
 END$$;
 SET client_min_messages = NOTICE;
