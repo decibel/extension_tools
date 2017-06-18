@@ -1,5 +1,3 @@
 include ../../pgxntool/base.mk
 
-# The control file actually gets pulled in automatically by base.mk, but be safe...
-# Though, maybe it'd be better to just reset DATA instead...
-DATA += $(wildcard *.sql) $(wildcard *.control)
+DATA += $(wildcard *.sql)
