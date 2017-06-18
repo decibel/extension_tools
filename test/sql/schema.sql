@@ -49,7 +49,7 @@ SELECT lives_ok(
 );
 SELECT bag_eq(
   $$SELECT * FROM _test_ed_2.extension_drop__get('extension_drop_test')$$
-  , $$SELECT 'extension_drop_test' AS extension_name, 'moo'$$
+  , $$SELECT 'extension_drop_test'::name , 'moo'::text$$
   , 'Verify extension_drop__get()'
 );
 

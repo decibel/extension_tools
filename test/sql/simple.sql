@@ -28,7 +28,7 @@ SELECT lives_ok(
 
 SELECT bag_eq(
   $$SELECT * FROM extension_drop__get('extension_drop_test')$$
-  , $$SELECT 'extension_drop_test' AS extension_name, 'DELETE FROM extension_drop_test_table'$$
+  , $$SELECT 'extension_drop_test'::name, 'DELETE FROM extension_drop_test_table'::text$$
   , 'Verify extension_drop__get()'
 );
 
