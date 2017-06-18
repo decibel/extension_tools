@@ -72,11 +72,13 @@
     "X_comment": "Valid keys for 'prereqs' are configure, build, runtime, or test.",
     "X_comment": "Valid keys for 'requires' are requires, recommends, suggests, or conflicts.",
     "X_comment": "Requires event_triggers, introduced in 9.3",
+    "X_comment": "cat_tools: requires extension suppport, added in 0.2.1",
     "prereqs": {
 
         "build": {
             "requires": {
-                "PostgreSQL": "9.3.0"
+                "PostgreSQL": "9.3.0",
+                "cat_tools": "0.2.1"
             }
         },
         "runtime": {
