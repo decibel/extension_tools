@@ -19,5 +19,14 @@ SET search_path = :TEST_SCHEMA, tap, "$user";
  * getting the very latest version).
  */
 SET client_min_messages = WARNING; -- Squelch notice from CASCADE
-CREATE EXTENSION extension_drop CASCADE;
+DO $$ BEGIN
+  IF current_setting('server_version_num')::int < 100000 THEN
+    CREATE EXTENSION IF NOT EXISTS cat_tools;
+    CREATE EXTENSION extension_drop ;
+  ELSE
+    CREATE EXTENSION extension_drop CASCADE;
+  END IF;
+END$$;
 SET client_min_messages = NOTICE;
+
+-- vi: expandtab ts=2 sw=2
